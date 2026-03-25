@@ -23,6 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Inject dispatch token
+        run: sed -i 's/__GH_DISPATCH_TOKEN__/${{ secrets.GH_DISPATCH_TOKEN }}/' config.js
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 

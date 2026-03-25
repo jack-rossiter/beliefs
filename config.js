@@ -9,13 +9,12 @@ const CONFIG = {
   totalPoints: 100,
 
   // Response storage via GitHub repository_dispatch.
-  // Generate a fine-grained PAT at: github.com → Settings → Developer settings →
-  // Personal access tokens → Fine-grained tokens. Scope it to this repo only,
-  // with Contents read/write permission.
+  // The token is injected at deploy time from the repository secret GH_DISPATCH_TOKEN.
+  // See README or deploy.yml for setup instructions.
   github: {
     owner: "jack-rossiter",
     repo: "beliefs",
-    token: "PASTE_YOUR_FINE_GRAINED_PAT_HERE"
+    token: "__GH_DISPATCH_TOKEN__"
   },
 
   /* ── Module A: consent, background, tutorial, context ── */
