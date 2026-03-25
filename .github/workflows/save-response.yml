@@ -1,0 +1,33 @@
+name: Save elicitation response
+
+on:
+  repository_dispatch:
+    types: [elicitation-response]
+
+permissions:
+  contents: write
+
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write response file
+        env:
+          PAYLOAD: ${{ toJSON(github.event.client_payload) }}
+        run: |
+          mkdir -p responses
+          RESP_ID=$(echo "$PAYLOAD" | jq -r '.meta.respondentId // "unknown"')
+          TS=$(echo "$PAYLOAD" | jq -r '.meta.endTime // empty' | tr ':.' '-')
+          FILENAME="${RESP_ID}_${TS}.json"
+          echo "$PAYLOAD" | jq '.' > "responses/${FILENAME}"
+          echo "Saved response to responses/${FILENAME}"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add responses/
+          git diff --staged --quiet || git commit -m "Add elicitation response"
+          git push
