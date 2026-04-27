@@ -17,7 +17,7 @@
   const btnNext = $("#btn-next");
   const progressText = $("#progress-text");
 
-  const responses = { meta: {}, calibration: {}, outcomes: {}, heterogeneity: {}, nonLinearity: {}, policyRelevance: {} };
+  const responses = { meta: {}, outcomes: {}, heterogeneity: {}, nonLinearity: {}, policyRelevance: {} };
   const pageState = {};
   let pages = [];
   let currentPage = 0;
@@ -50,6 +50,7 @@
       render: () => renderSliderPage({
         title: "Practice question",
         preamble: CONFIG.moduleA.tutorial.practiceQuestion.prompt,
+        tip: CONFIG.moduleA.tutorial.practiceQuestion.tip,
         bins: CONFIG.moduleA.tutorial.practiceQuestion.bins
       }),
       validate: () => validateSliders("practice"),
@@ -65,28 +66,12 @@
     });
 
     pages.push({
-      id: "context", render: renderContext,
+      id: "vignette", render: renderVignette,
       validate: () => true, collect: () => {}
     });
 
-    CONFIG.moduleB.forEach((q, i) => {
-      pages.push({
-        id: q.id,
-        render: () => renderSliderPage({
-          title: "Calibration question " + (i + 1) + " of " + CONFIG.moduleB.length,
-          preamble: (i === 0 ? '<p class="calibration-intro">' + CONFIG.calibrationIntro + "</p>" : "") + q.prompt,
-          bins: q.bins,
-          dataKey: q.id
-        }),
-        validate: () => validateSliders(q.id),
-        collect: () => collectSliders(q.id, "calibration"),
-        saveState: () => saveSliderState(q.id),
-        restoreState: () => restoreSliderState(q.id, q.bins.length)
-      });
-    });
-
     pages.push({
-      id: "vignette", render: renderVignette,
+      id: "vignette-task", render: renderVignetteTask,
       validate: () => true, collect: () => {}
     });
 
@@ -99,6 +84,11 @@
         saveState: () => saveSliderState(q.id),
         restoreState: () => restoreSliderState(q.id, q.bins.length)
       });
+    });
+
+    pages.push({
+      id: "hetero-preamble", render: renderHeteroPreamble,
+      validate: () => true, collect: () => {}
     });
 
     CONFIG.moduleD.hetero.forEach((q) => {
@@ -265,46 +255,64 @@
       "</div>";
   }
 
-  function renderContext() {
-    main.innerHTML =
-      '<div class="card"><h2>' + CONFIG.moduleA.context.title + "</h2>" +
-      CONFIG.moduleA.context.paragraphs.map(function (p) { return "<p>" + p + "</p>"; }).join("") +
-      "</div>";
-  }
+  // Context page removed — content merged into vignette.
 
   function renderPracticeFeedback() {
     main.innerHTML =
       '<div class="card">' +
         "<h2>Practice result</h2>" +
         "<p><strong>Answer:</strong> " + CONFIG.moduleA.tutorial.practiceQuestion.answer + "</p>" +
-        "<p>If most of your weight was in the right range, great \u2014 you\u2019re ready to continue.</p>" +
       "</div>";
   }
 
   function renderVignette() {
     main.innerHTML =
-      '<div class="card"><h2>The programme</h2>' +
+      '<div class="card"><h2>The programmes we are interested in</h2>' +
       CONFIG.vignette.split("\n\n").map(function (p) { return "<p>" + p + "</p>"; }).join("") +
       "</div>";
   }
 
+  function renderVignetteTask() {
+    var paras = CONFIG.vignetteTask.split("\n\n").map(function (p) { return "<p>" + p + "</p>"; });
+    main.innerHTML =
+      '<div class="card"><h2>What differences does early reading support make in the long run?</h2>' +
+      paras[0] +
+      '<div class="anchor-box">' + CONFIG.vignetteTaskAnchor + "</div>" +
+      paras.slice(1).join("") +
+      "</div>";
+  }
+
   function renderOutcomePage(q, idx) {
+    var promptHTML = q.prompt.split("\n\n").map(function (p) { return "<p>" + p + "</p>"; }).join("");
     main.innerHTML =
       '<div class="card">' +
         '<h2>Outcome ' + (idx + 1) + " of " + CONFIG.moduleC.length + ": " + q.title + "</h2>" +
         (q.anchor ? '<div class="anchor-box">' + q.anchor + "</div>" : "") +
-        "<p>" + q.prompt + "</p>" +
+        promptHTML +
         '<p class="text-small text-muted">Unit: ' + q.unit + "</p>" +
       "</div>" +
       buildSliderHTML(q.id, q.bins, null);
     attachSliderListeners(q.id, q.bins.length);
   }
 
+  function renderHeteroPreamble() {
+    main.innerHTML =
+      '<div class="card"><h2>How much do effects vary across settings?</h2>' +
+      CONFIG.heteroPreamble.split("\n\n").map(function (p) { return "<p>" + p + "</p>"; }).join("") +
+      "</div>";
+  }
+
   function renderHeteroPage(q) {
+    var preambleHTML = "";
+    if (q.preamble) {
+      var parts = q.preamble.split("\n\n");
+      preambleHTML = parts.map(function(p) { return "<p>" + p + "</p>"; }).join("");
+    }
     main.innerHTML =
       '<div class="card">' +
         "<h2>" + q.title + "</h2>" +
-        "<p>" + q.preamble + "</p>" +
+        preambleHTML +
+        (q.example ? '<div class="anchor-box">' + q.example + "</div>" : "") +
         '<p class="mt-1">' + q.prompt + "</p>" +
         '<p class="text-small text-muted">Unit: ' + q.unit + "</p>" +
       "</div>" +
@@ -316,25 +324,25 @@
   function renderNonLinearity() {
     var nl = CONFIG.moduleD.nonLinearity;
 
-    var personalNote = "";
+    var opening = "You just predicted the effects of a 0.3 SD reading gain on adult outcomes.";
     var earningsData = responses.outcomes.earnings;
     if (earningsData && earningsData.allocation) {
       var maxVal = Math.max.apply(null, earningsData.allocation);
       if (maxVal > 0) {
         var maxIdx = earningsData.allocation.indexOf(maxVal);
         var modalBin = earningsData.bins[maxIdx];
-        personalNote = "For instance, you predicted that the most likely effect on earnings was around <strong>" + modalBin + "</strong> for a 0.3 SD gain. ";
+        opening = "You predicted that the most likely effect on earnings was around <strong>" + modalBin + "</strong> for a 0.3 SD reading gain.";
       }
     }
 
-    var promptText = nl.promptTemplate.replace("{PERSONALISED_NOTE}", personalNote);
+    var promptText = nl.promptTemplate.replace("{PERSONALISED_OPENING}", opening);
     var opts = nl.options.map(function (o) {
       return '<label><input type="radio" name="nl_choice" value="' + o.value + '"> ' + o.label + "</label>";
     }).join("");
 
     main.innerHTML =
       '<div class="card">' +
-        '<h2>Non-linearity in returns</h2>' +
+        '<h2>What if the effect doubles?</h2>' +
         promptText.split("\n\n").map(function (p) { return "<p>" + p + "</p>"; }).join("") +
         '<div class="radio-group mt-1">' + opts + "</div>" +
         '<div class="form-group mt-2">' +
@@ -417,7 +425,7 @@
     var sliders = bins.map(function (label, i) {
       return '<div class="slider-row">' +
         '<span class="bin-label">' + label + "</span>" +
-        '<input type="range" min="0" max="' + TOTAL + '" value="0" step="5" ' +
+        '<input type="range" min="0" max="' + TOTAL + '" value="0" step="1" ' +
           'id="sl_' + key + "_" + i + '" data-key="' + key + '" data-idx="' + i + '">' +
         '<input type="number" min="0" max="' + TOTAL + '" value="0" ' +
           'id="sv_' + key + "_" + i + '" class="slider-val-input" ' +
@@ -531,11 +539,9 @@
   function collectSliders(key, section) {
     var vals = getSliderValues(key);
     var binLabels = [];
-    var calQ = CONFIG.moduleB.find(function (q) { return q.id === key; });
     var outQ = CONFIG.moduleC.find(function (q) { return q.id === key; });
     var hetQ = CONFIG.moduleD.hetero.find(function (q) { return q.id === key; });
-    if (calQ) binLabels = calQ.bins;
-    else if (outQ) binLabels = outQ.bins;
+    if (outQ) binLabels = outQ.bins;
     else if (hetQ) binLabels = hetQ.bins;
 
     responses[section][key] = {
@@ -546,19 +552,21 @@
   }
 
   /* ──────────────────────────────────────────────────────
-     Slider page (calibration & practice)
+     Slider page (practice)
      ────────────────────────────────────────────────────── */
 
   function renderSliderPage(opts) {
     var key = opts.dataKey || "practice";
     main.innerHTML =
-      '<div class="card"><h2>' + opts.title + "</h2><p>" + opts.preamble + "</p></div>" +
+      '<div class="card"><h2>' + opts.title + "</h2><p>" + opts.preamble + "</p>" +
+      (opts.tip ? '<p class="text-small text-muted">' + opts.tip + "</p>" : "") +
+      "</div>" +
       buildSliderHTML(key, opts.bins, null);
     attachSliderListeners(key, opts.bins.length);
   }
 
   /* ──────────────────────────────────────────────────────
-     GitHub data submission
+     GitHub data submission (trial/prototype)
      ────────────────────────────────────────────────────── */
 
   function submitToGitHub(data) {

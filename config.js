@@ -5,201 +5,155 @@
  */
 
 const CONFIG = {
-  title: "Expert Beliefs — Return to Learning Initiative",
+  title: "Expert Beliefs \u2014 Return to Learning Initiative",
   totalPoints: 100,
 
-  // Response storage via GitHub repository_dispatch.
-  // The token is injected at deploy time from the repository secret GH_DISPATCH_TOKEN.
-  // See README or deploy.yml for setup instructions.
-  github: {
-    owner: "jack-rossiter",
-    repo: "beliefs",
-    token: "__GH_DISPATCH_TOKEN__"
-  },
+  // Trial data storage via GitHub repository_dispatch. Set to null for offline use.
+  github: null,
+  // github: { owner: "your-org", repo: "lr-tracking", token: "ghp_..." },
 
-  /* ── Module A: consent, background, tutorial, context ── */
+  /* ── Module A: consent, background, tutorial ── */
   moduleA: {
     consent: {
-      text: "This exercise is part of the Return to Learning Initiative, a research programme studying the long-run effects of improvements in early literacy. We are collecting beliefs from policymakers, practitioners and researchers about what happens to children who benefited from reading programmes, 15 years later.\n\nYour responses are confidential and will be used only for research purposes. The exercise takes approximately 25 minutes.\n\nBy proceeding, you consent to participate."
+      text: "This exercise is part of the Return to Learning Initiative, a research programme studying the long-run effects of improvements in early literacy.\n\nWe are collecting beliefs from policymakers, practitioners and researchers about what differences early reading programmes make, 15 years later.\n\nYour responses are confidential and will be used only for research purposes.\n\nThe exercise takes approximately 20 minutes.\n\nBy proceeding, you consent to participate.\n\nThank you for your time."
     },
     background: {
       fields: [
-        { id: "name", label: "Name (optional)", type: "text" },
         {
-          id: "role", label: "Which best describes your role?", type: "radio",
+          id: "role", label: "Which best describes your role? (required)", type: "radio",
           options: ["Policymaker", "Practitioner", "Researcher", "Other"]
         },
-        { id: "experience", label: "Years of experience working on education, labour markets, or related sectors in low- and middle-income countries", type: "number" },
-        { id: "country", label: "Primary country of work", type: "text" }
+        { id: "name", label: "Name (optional)", type: "text" },
+        { id: "experience", label: "Years of experience working on education, labour markets, or related sectors in low- and middle-income countries (optional)", type: "number" },
+        { id: "country", label: "Primary country of work (optional)", type: "text" }
       ]
     },
     tutorial: {
       title: "How this works",
       paragraphs: [
-        "In this exercise, you will be asked to predict the long-term adult outcomes of children who gained additional early literacy skills — the kind of gains produced by reading interventions in low-income countries. For each question, you will see a set of bins representing different possible effect sizes.",
-        "You have <strong>100 points</strong> to allocate across the bins. Each point represents a 1% probability. If you put 30 points in a bin, it means you think there is a 30% chance the true effect falls in that range.",
-        "You can <strong>type numbers</strong> directly into the boxes next to each bin, or drag the sliders. A histogram will update in real time to show the shape of your belief distribution. Your points must add up to exactly 100 before you can proceed.",
-        "Let\u2019s try a practice example first."
+        "You will be asked to predict the long-term adult outcomes of children who gained additional early literacy skills several years ago. For each question, you will see a set of bins representing different possible outcomes.",
+        "You always have <strong>100 points</strong> to allocate across the bins. Each point represents a 1% probability. If you put 30 points in a bin, it means you think there is a 30% chance the true effect falls in that range. If you are fairly sure the effect falls in a narrow range, most of your points will be concentrated in a few bins. If you are less sure, your points will naturally be spread more widely.",
+        "You can <strong>type numbers</strong> directly into the boxes next to each bin, or drag the sliders. A histogram will update in real time to show your beliefs. When your points add up to exactly 100 you can proceed.",
+        "First, there\u2019s a simple example to test how the slider works."
       ],
       practiceQuestion: {
         prompt: "What percentage of the world\u2019s population lives in Asia?",
+        tip: "Tip: type numbers directly into the boxes, or drag the sliders.",
         bins: [
-          "30% or less", "31\u201335%", "36\u201340%", "41\u201345%", "46\u201350%",
-          "51\u201355%", "56\u201360%", "61\u201365%", "66\u201370%", "71\u201375%",
-          "76\u201380%", "81% or more"
+          "0\u20139.9%", "10\u201319.9%", "20\u201329.9%", "30\u201339.9%", "40\u201349.9%",
+          "50\u201359.9%", "60\u201369.9%", "70\u201379.9%", "80\u201389.9%", "90\u2013100%"
         ],
-        answer: "Approximately 59%. If most of your weight was in the 51\u201365% range, you\u2019re well calibrated!"
+        answer: "Approximately 60%. If most of your points were in and around the 50\u201370% range, well done!"
       }
-    },
-    context: {
-      title: "Background on foundational literacy programmes",
-      paragraphs: [
-        "Over the past two decades, dozens of randomised evaluations have tested approaches to improving early reading skills among primary school children in low- and middle-income countries. These have included providing textbooks and other teaching materials, remedial instruction, structured pedagogy, teacher bonuses, and Teaching at the Right Level (TaRL).",
-        "Short-run effects on reading assessments range widely: the 10th and 90th percentiles of impacts are approximately 0 and 0.5 standard deviations, respectively (Evans & Yuan, 2022). The gain described in this exercise \u2014 0.3 SD \u2014 sits near the centre of that range. To put this in perspective, a 0.3 SD gain would move a child from the 50th to about the 62nd percentile among her peers. In more concrete terms, a child reading about 10 correct words per minute can now read about 15.",
-        "Children in some of the earliest trials are now in their mid-twenties. We want to know what <em>you</em> think happened to them."
-      ]
     }
   },
 
-  /* ── Module B: calibration (2 questions) ───────────────
-     B3 (youth employment) dropped to avoid priming the
-     Module C employment outcome.                          */
-  calibrationIntro: "The next two questions are about known facts. They help us understand how people express uncertainty using this tool \u2014 there are no consequences for getting them wrong.",
+  /* ── Vignette ──────────────────────────────────── */
 
-  moduleB: [
-    {
-      id: "cal_literacy",
-      prompt: "In low- and middle-income countries, what percentage of adults (aged 15 and older) can read and write a short, simple statement about their everyday life?",
-      bins: [
-        "20% or less", "21\u201325%", "26\u201330%", "31\u201335%", "36\u201340%",
-        "41\u201345%", "46\u201350%", "51\u201355%", "56\u201360%", "61\u201365%",
-        "66\u201370%", "71\u201375%", "76\u201380%", "81\u201385%", "86\u201390%",
-        "91% or more"
-      ],
-      trueBin: 14
-    },
-    {
-      id: "cal_completion",
-      prompt: "Among young people aged 20\u201324 in low- and middle-income countries, what percentage have completed lower-secondary school (roughly 9\u201310 years of schooling)?",
-      bins: [
-        "20% or less", "21\u201325%", "26\u201330%", "31\u201335%", "36\u201340%",
-        "41\u201345%", "46\u201350%", "51\u201355%", "56\u201360%", "61\u201365%",
-        "66\u201370%", "71\u201375%", "76\u201380%", "81\u201385%", "86\u201390%",
-        "91% or more"
-      ],
-      trueBin: 12
-    }
-  ],
+  vignette: "Over the past two decades, dozens of <strong>randomised evaluations</strong> have tested approaches to improving <strong>early reading skills</strong> among children in primary schools in <strong>low- and middle-income countries</strong>, particularly across sub-Saharan Africa and South Asia. Children from some of the earliest trials are now in their mid- to late-twenties.\n\nThe programmes have taken many different forms: some trained teachers in new methods for instruction, others provided reading materials, others offered bonuses to teachers for improved student performance, others recruited teaching assistants to deliver remedial lessons, still others reorganised classrooms so that children were grouped by level rather than by grade.\n\nMost programmes targeted children in <strong>Grades 1 through 4</strong> and ran for <strong>one school year or less</strong>. In each evaluation, schools were <strong>randomly assigned</strong> to either receive the programme or serve as comparisons. Some approaches were more effective than others, but across evaluations, almost all estimated short-run effects on reading scores were between <strong>zero and 0.5 standard deviations</strong>.",
 
-  /* ── Module C: outcome elicitation ─────────────────────
-     Bins use a symmetric fine zone (-5 to +5 at 1 pp),
-     symmetric taper on both sides, and outcome-specific
-     tails extending further where extreme effects are
-     more plausible.                                       */
+  vignetteTask: "Imagine we select several of these programmes, from low- and middle-income countries, each with an evaluated gain of <strong>0.3 Standard Deviations (SD)</strong> in reading scores.\n\nWe will go back and find both groups, those who received each programme and those in comparison schools, <strong>15 years later</strong>. They will be <strong>aged about 25</strong>.\n\nWe want to know what differences you think that early boost in reading made in their lives.\n\nWe are asking about the <strong>average differences across these settings</strong>, not about any single programme or country. How much do you expect that early improvement in reading to have translated into changes in adult outcomes?\n\nWe will ask you about four outcomes: whether they completed lower-secondary school, whether they are in paid work, how much they earn if they are working, and whether women had their first child before the age of 20.",
 
-  vignette: "Over the past two decades, researchers have evaluated a variety of approaches to improving early reading skills among children in lower primary school (grades 1\u20133) in low-income countries. In a typical study, 100 schools were <strong>randomly assigned</strong> to receive the intervention and 100 schools served as comparisons. The interventions have taken different forms: some trained teachers in structured methods for reading instruction and provided classroom libraries and reading materials; others brought in teaching assistants or community volunteers to deliver targeted remedial lessons to children who were behind; still others reorganised classrooms so that children were grouped by reading level rather than by grade. Most ran for one school year or less.\n\nDespite their different designs, these interventions produced broadly similar short-run gains in reading. At the end of the intervention period, children in intervention schools scored on average <strong>0.3 standard deviations</strong> higher on standardised reading assessments than children in comparison schools. In practical terms, this means a child who could read about 10 correct words per minute can now read about 15 \u2014 roughly 5 additional correct words per minute. A child who was recognising letters but not yet reading words can now read simple words and short sentences.\n\nThese interventions have been implemented in many countries across sub-Saharan Africa and South Asia. We now go back and find these children <strong>15 years later</strong>. They are now <strong>aged about 25</strong>. We want to know what you think happened to them \u2014 not as a result of any single intervention or in any one country, but <strong>on average, how much did that improvement in early reading translate into better adult outcomes</strong> across the range of settings where these interventions took place.",
+  vignetteTaskAnchor: "In practical terms, a 0.3 SD gain means that a child who could read about 10 correct words per minute at baseline could read about 15 by the end of the programme, or a child who was recognising letters but not yet reading words at baseline could read several simple words at the end of the programme.",
+
+  /* ── Module C: outcome elicitation ─────────────── */
 
   moduleC: [
     {
       id: "completion",
       title: "Lower-secondary school completion",
-      anchor: "Among children who did <strong>not</strong> receive these interventions, approximately <strong>40%</strong> completed lower-secondary school (roughly 9\u201310 years of schooling).",
-      prompt: "How much do you think the improvement in early reading increased the share of children who completed lower-secondary school, on average across settings?",
-      unit: "percentage-point change",
+      anchor: "Among adults from comparison schools, approximately <strong>40%</strong> completed lower-secondary school (typically 9\u201310 years of schooling).",
+      prompt: "How many percentage points higher or lower do you think lower-secondary completion was among those who received the 0.3 SD reading boost, on average across settings?",
+      unit: "percentage-point difference",
       bins: [
-        "\u2264 \u221210", "\u22129 to \u22128", "\u22127 to \u22126",
-        "\u22125", "\u22124", "\u22123", "\u22122", "\u22121",
-        "0",
-        "+1", "+2", "+3", "+4", "+5",
-        "+6 to +7", "+8 to +9",
-        "+10 to +14", "+15 to +20", "\u2265 +21"
+        "\u2264 \u22126.1", "\u22126 to \u22124.1", "\u22124 to \u22122.1", "\u22122 to \u22120.1",
+        "0 to +1.9", "+2 to +3.9", "+4 to +5.9",
+        "+6 to +7.9", "+8 to +9.9",
+        "+10 to +14.9", "\u2265 +15"
       ]
     },
     {
       id: "employment",
-      title: "Paid employment",
-      anchor: "Among non-participants now aged about 25, approximately <strong>65%</strong> are in any form of paid work \u2014 whether formal employment, casual labour, or self-employment in a household enterprise \u2014 but not unpaid household or subsistence work.",
-      prompt: "How much do you think the improvement in early reading increased the share of former participants who are in paid work, on average across settings?",
-      unit: "percentage-point change",
+      title: "Paid work",
+      anchor: "Among adults from comparison schools, now aged about 25, approximately <strong>65%</strong> are in any form of paid work. That includes formal employment, casual labour, or self-employment in a household enterprise, but not unpaid household or subsistence work.",
+      prompt: "How many percentage points higher or lower do you think the share in paid work is among those who received the 0.3 SD reading boost, on average across settings?",
+      unit: "percentage-point difference",
       bins: [
-        "\u2264 \u221210", "\u22129 to \u22128", "\u22127 to \u22126",
-        "\u22125", "\u22124", "\u22123", "\u22122", "\u22121",
-        "0",
-        "+1", "+2", "+3", "+4", "+5",
-        "+6 to +7", "+8 to +9",
-        "+10 to +14", "\u2265 +15"
+        "\u2264 \u22126.1", "\u22126 to \u22124.1", "\u22124 to \u22122.1", "\u22122 to \u22120.1",
+        "0 to +1.9", "+2 to +3.9", "+4 to +5.9",
+        "+6 to +7.9", "+8 to +9.9",
+        "+10 to +14.9", "\u2265 +15"
       ]
     },
     {
       id: "earnings",
       title: "Earnings",
-      anchor: "Among non-participants now aged about 25 who are working, median monthly earnings are approximately <strong>$80 USD</strong> (adjusted for local purchasing power).",
-      prompt: "How much do you think the improvement in early reading increased the earnings of former participants, on average across settings? Think in terms of the percentage change in monthly earnings.",
-      unit: "percentage change",
+      anchor: "Among adults from comparison schools who are working, now aged about 25, average (median) monthly earnings are approximately <strong>$80 USD</strong> (adjusted for local purchasing power).",
+      prompt: "How much higher or lower (in percentage terms) do you think monthly earnings are among those who received the 0.3 SD reading boost, on average across settings?",
+      unit: "percentage difference",
       bins: [
-        "\u2264 \u221210%", "\u22129 to \u22128%", "\u22127 to \u22126%",
-        "\u22125%", "\u22124%", "\u22123%", "\u22122%", "\u22121%",
-        "0%",
-        "+1%", "+2%", "+3%", "+4%", "+5%",
-        "+6 to +7%", "+8 to +9%",
-        "+10 to +14%", "+15 to +20%", "+21 to +30%", "\u2265 +31%"
+        "\u2264 \u22126.1%", "\u22126% to \u22124.1%", "\u22124% to \u22122.1%", "\u22122% to \u22120.1%",
+        "0% to +1.9%", "+2% to +3.9%", "+4% to +5.9%",
+        "+6% to +7.9%", "+8% to +9.9%",
+        "+10% to +14.9%", "\u2265 +15%"
       ]
     },
     {
       id: "fertility",
-      title: "Early pregnancy (female beneficiaries)",
-      anchor: "Among female non-participants now aged about 25, approximately <strong>40%</strong> had their first child before age 20.",
-      prompt: "How do you think the improvement in early reading affected the share of female former participants who had their first child before age 20, on average across settings? A negative number means early pregnancy was reduced; a positive number means it increased.",
-      unit: "percentage-point change",
+      title: "Early childbearing (women)",
+      anchor: "Among women from comparison schools, approximately <strong>40%</strong> had their first child before age 20.",
+      prompt: "How many percentage points higher or lower do you think the share who had their first child before age 20 was among those who received the 0.3 SD reading boost, on average across settings?\n\n<strong>A negative number means a lower rate of early childbearing; a positive number means a higher rate.</strong>",
+      unit: "percentage-point difference",
       bins: [
-        "\u2264 \u221220", "\u221219 to \u221215", "\u221214 to \u221210",
-        "\u22129 to \u22128", "\u22127 to \u22126",
-        "\u22125", "\u22124", "\u22123", "\u22122", "\u22121",
-        "0",
-        "+1", "+2", "+3", "+4", "+5",
-        "+6 to +7", "+8 to +9", "\u2265 +10"
+        "\u2264 \u221215.1", "\u221215 to \u221210.1", "\u221210 to \u22128.1",
+        "\u22128 to \u22126.1", "\u22126 to \u22124.1", "\u22124 to \u22122.1", "\u22122 to \u22120.1",
+        "0 to +1.9", "+2 to +3.9", "+4 to +5.9", "\u2265 +6"
       ]
     }
   ],
 
   policyRelevance: {
-    prompt: "What is the smallest change in earnings you would consider substantively important \u2014 large enough to represent a meaningful improvement in people\u2019s economic lives? (This is not about your predictions \u2014 we are asking about the threshold below which you would consider the effect too small to matter.)",
+    prompt: "What is the smallest change in earnings you would consider substantively important, large enough to represent a meaningful improvement in people\u2019s economic lives? (This is not about your predictions. We are asking about the threshold below which you would consider the effect too small to matter.)",
     unit: "percentage change in earnings",
     label: "Minimum required percentage change in earnings"
   },
 
   /* ── Module D: heterogeneity & non-linearity ───────── */
+  heteroPreamble: "So far you have predicted the <strong>average</strong> effect of a 0.3 SD reading gain on adult outcomes, pooling across all settings.\n\nIn practice, these programmes have been run in countries like <strong>Ghana, India, Kenya, Liberia, Pakistan, and Uganda</strong>, places that differ in their education systems, labour markets, and economic conditions. Even if the initial reading gain is the same (0.3 SD), the long-run effects may not be.\n\nWe now want to know how much you think the <strong>true effect varies across countries</strong>. This is not about your uncertainty in the average. It is about whether you think the real effect is roughly the same everywhere, or whether it is genuinely larger in some settings and smaller in others.\n\nWe will ask about two outcomes: <strong>lower-secondary completion</strong> and <strong>earnings</strong>.",
+
   moduleD: {
     hetero: [
       {
         id: "hetero_completion",
         title: "Heterogeneity in completion effects",
-        preamble: "You predicted the <strong>average</strong> effect on lower-secondary completion across settings. In practice, these interventions have been run in countries like <strong>Ghana, India, Liberia, and Uganda</strong> \u2014 places that differ considerably in their education systems, labour markets, and economic conditions.<br><br>We are not asking about your uncertainty \u2014 think about how much the true effect would genuinely differ from one country to another.<br><br><em>We ask about heterogeneity for two key outcomes to keep the exercise manageable.</em>",
-        prompt: "What is the difference between the setting where the effect on completion is largest and the setting where it is smallest? For example, if the reading gain increases completion by 8 pp in the best setting and 2 pp in the worst, the range would be 6 pp. Use the bins to express how certain you are about this range \u2014 if you think it is probably around 6 but could be larger or smaller, spread your points across several nearby bins.",
+        preamble: "First think about the effect on <strong>lower-secondary completion</strong>.\n\nWhat is the difference between the setting where the effect on completion is largest and the setting where it is smallest?",
+        example: "For example, if the reading gain increases completion by 8 pp in the best setting and 2 pp in the worst, the range would be 6 pp.",
+        prompt: "As before, spreading your points across bins reflects your uncertainty.",
         unit: "percentage-point difference",
         bins: [
-          "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-          "11\u201312", "13\u201314", "15\u201317", "18\u201320", "21\u201325", "26\u201330", "\u2265 31"
+          "0 to 1.9", "2 to 3.9", "4 to 5.9", "6 to 7.9", "8 to 9.9",
+          "10 to 14.9", "15 to 19.9", "\u2265 20"
         ]
       },
       {
         id: "hetero_earnings",
         title: "Heterogeneity in earnings effects",
-        preamble: "Now think about the effect on <strong>earnings</strong>.",
-        prompt: "What is the difference in the percentage change in earnings between the setting where the effect is largest and where it is smallest? For example, if earnings increase by 12% in the best setting and 2% in the worst, the range would be 10 percentage points. Use the bins to express how certain you are about this range \u2014 if you think it is probably around 10 but could be larger or smaller, spread your points across several nearby bins.",
-        unit: "percentage-point difference in earnings effect",
+        preamble: "Now think about the effect on <strong>earnings</strong>.\n\nWhat is the difference in the percentage change in earnings between the setting where the effect is largest and where it is smallest?",
+        example: "For example, if earnings increase by 12% in the best setting and 2% in the worst, the range would be 10 percentage points.",
+        prompt: "As before, spreading your points across bins reflects your uncertainty.",
+        unit: "percentage-point difference",
         bins: [
-          "0%", "1%", "2%", "3%", "4%", "5%", "6%", "7%", "8%", "9%", "10%",
-          "11\u201312%", "13\u201314%", "15\u201317%", "18\u201320%", "21\u201325%", "26\u201330%", "\u2265 31%"
+          "0 to 1.9", "2 to 3.9", "4 to 5.9", "6 to 7.9", "8 to 9.9",
+          "10 to 14.9", "15 to 19.9", "\u2265 20"
         ]
       }
     ],
     nonLinearity: {
-      promptTemplate: "You just predicted what happens when children gain about 5 extra correct words per minute in reading (a 0.3 SD gain). Now imagine an intervention that produced twice that gain \u2014 about 10 extra correct words per minute (a 0.6 SD gain).\n\n{PERSONALISED_NOTE}Would you expect the long-run effects on adult outcomes to be:",
+      promptTemplate: "{PERSONALISED_OPENING}\n\nNow imagine an intervention that produced twice that gain, about 10 extra correct words per minute (a 0.6 SD gain).\n\nWould you expect the long-run effects on adult earnings to be:",
       options: [
         { value: "more_than_doubled", label: "More than doubled (bigger initial gains lead to disproportionately bigger long-run effects)" },
         { value: "roughly_doubled", label: "Roughly doubled (long-run effects scale proportionally with the reading gain)" },
-        { value: "less_than_doubled", label: "Less than doubled (there are diminishing returns \u2014 twice the reading gain does not produce twice the long-run effect)" }
+        { value: "less_than_doubled", label: "Less than doubled (there are diminishing returns: twice the reading gain does not produce twice the long-run effect)" }
       ],
       followUp: "Please briefly explain your reasoning (optional):"
     }
