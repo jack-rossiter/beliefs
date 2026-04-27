@@ -8,9 +8,14 @@ const CONFIG = {
   title: "Expert Beliefs \u2014 Return to Learning Initiative",
   totalPoints: 100,
 
-  // Trial data storage via GitHub repository_dispatch. Set to null for offline use.
-  github: null,
-  // github: { owner: "your-org", repo: "lr-tracking", token: "ghp_..." },
+  // Response storage via GitHub repository_dispatch.
+  // The token is injected at deploy time from the repository secret GH_DISPATCH_TOKEN.
+  // See README or deploy.yml for setup instructions.
+  github: {
+    owner: "jack-rossiter",
+    repo: "beliefs",
+    token: "__GH_DISPATCH_TOKEN__"
+  },
 
   /* ── Module A: consent, background, tutorial ── */
   moduleA: {
